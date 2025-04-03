@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crack Depth Calculator (3D) - PULSONIC</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        :root {
+            /* (Color variables remain the same) */
+            --primary-color: #3498db; --primary-dark: #2980b9; --secondary-color: #e0f2fe;
+            --text-dark: #2c3e50; --text-light: #5a6878; --border-color: #cbd5e0;
+            --background-light: #ffffff; --background-gradient-start: #eaf0f7; --background-gradient-end: #d8e2ec;
+            --success-bg: #e0f2fe; --success-border: #a0cff5; --success-icon: #3498db;
+            --error-bg: #feefec; --error-border: #f5a0a4; --error-icon: #e74c3c;
+            --diagram-concrete: #e2e8f0; /* Lighter Concrete for 3D */
+            --diagram-transducer: #374151;
+            --diagram-crack: #e74c3c; /* Red crack for visibility */
+            --diagram-label: #4b5563;
+        }
+
+        /* (Basic styles: *, body, container, h1, input-group, label, input, button, result, footer remain mostly the same) */
+         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+         body { background: linear-gradient(135deg, var(--background-gradient-start), var(--background-gradient-end)); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; font-size: 16px; color: var(--text-dark); }
+        .container { background: var(--background-light); border-radius: 15px; box-shadow: 0 15px 35px rgba(44, 62, 80, 0.15); padding: 40px; width: 100%; max-width: 500px; transition: transform 0.3s ease, box-shadow 0.3s ease; border: 1px solid #e2e8f0; }
+        .container:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(44, 62, 80, 0.2); }
+        h1 { text-align: center; color: var(--text-dark); margin-bottom: 35px; font-size: 26px; font-weight: 600; letter-spacing: 0.5px; }
+        h1 i { margin-right: 10px; color: var(--primary-color); }
+        .input-group { margin-bottom: 25px; }
+        label { display: block; color: var(--text-light); font-size: 14px; margin-bottom: 8px; font-weight: 500; }
+        input[type="number"] { width: 100%; padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 16px; transition: border-color 0.3s ease, box-shadow 0.3s ease; appearance: textfield; -moz-appearance: textfield; }
+        input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2); }
+        button { width: 100%; padding: 14px; background: linear-gradient(180deg, var(--primary-color), var(--primary-dark)); border: none; border-radius: 8px; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.3s ease, transform 0.1s ease, box-shadow 0.3s ease; box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08); }
+        button:hover { background: linear-gradient(180deg, #4fa8e0, #318fd6); box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08); }
+        button:active { transform: translateY(1px); }
+        #result { margin-top: 30px; font-size: 16px; padding: 15px 20px; border-radius: 8px; display: flex; align-items: center; justify-content: flex-start; min-height: 58px; width: 100%; line-height: 1.5; word-wrap: break-word; transition: background-color 0.3s ease, border-color 0.3s ease; background-color: var(--success-bg); border: 1px solid var(--success-border); color: var(--text-dark); }
+        #result i { font-size: 20px; margin-right: 12px; color: var(--success-icon); flex-shrink: 0; }
+        #result.error { background-color: var(--error-bg); border-color: var(--error-border); color: #a54844; }
+        #result.error i { color: var(--error-icon); }
+        .footer { text-align: center; margin-top: 30px; font-size: 12px; color: var(--text-light); }
+
+        /* --- 3D Diagram Styles --- */
+        #diagramSection {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+             display: none; /* Hidden by default */
+             position: relative; /* Needed for absolute positioning of labels */
+        }
+        #diagramSection h2 {
+             font-size: 16px; font-weight: 600; color: var(--text-dark);
+             margin-bottom: 15px;
+             text-align: center;
+        }
+        #diagramCanvas {
+            display: block; /* Remove extra space below canvas */
+            width: 100% !important; /* Make canvas responsive */
+            max-width: 400px; /* Limit max size */
+            height: 250px !important; /* Fixed height */
+            margin: 0 auto; /* Center canvas */
+            background-color: #f8fafd; /* Light background for canvas */
+            border-radius: 5px;
+            cursor: grab;
+        }
+         #diagramCanvas:active {
+             cursor: grabbing;
+         }
+
+        /* HTML Overlay Labels for 3D */
+        .diagram-label-3d {
+             position: absolute;
+             font-size: 10px;
+             font-weight: 500;
+             color: var(--diagram-label);
+             background-color: rgba(255, 255, 255, 0.85);
+             padding: 2px 4px;
+             border-radius: 3px;
+             white-space: nowrap;
+             text-align: center;
+             pointer-events: none; /* Prevent labels from interfering with canvas interaction */
+             transform: translateX(-50%); /* Center horizontally */
+             display: none; /* Hidden until updated */
+        }
+
+        #label-l2-start {
+             /* Position will be set by JS based on canvas */
+        }
+         #label-l2-end {
+             /* Position will be set by JS based on canvas */
+         }
+          #label-h-value {
+             /* Position will be set by JS based on canvas */
+          }
+
+        @media (max-width: 480px) {
+            #diagramCanvas { height: 200px !important; }
+            .diagram-label-3d { font-size: 9px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-ruler-combined"></i>Crack Depth Calculator (3D)</h1>
+        <form id="crackForm">
+             <!-- (Input groups remain the same) -->
+             <div class="input-group"><label for="t1">Transit Time in Sound Concrete (t1, µs):</label><input type="number" id="t1" step="any" min="0.00001" required placeholder="e.g., 25"></div>
+             <div class="input-group"><label for="l1">Sound Concrete Spacing (L1, mm):</label><input type="number" id="l1" step="any" min="0.00001" required placeholder="e.g., 100"></div>
+             <div class="input-group"><label for="t2">Transit Time Across Crack (t2, µs):</label><input type="number" id="t2" step="any" min="0.00001" required placeholder="e.g., 70.7"></div>
+             <div class="input-group"><label for="l2">Cracked Concrete Spacing (L2, mm):</label><input type="number" id="l2" step="any" min="0.00001" required placeholder="e.g., 200"></div>
+             <button type="submit">Calculate Crack Depth</button>
+        </form>
+
+        <div id="result"><i class="fas fa-info-circle"></i><span>Result will appear here</span></div>
+
+        <!-- 3D Diagram Section -->
+        <div id="diagramSection">
+            <h2>3D Schematic View</h2>
+            <canvas id="diagramCanvas"></canvas>
+            <!-- HTML Overlay Labels -->
+            <span id="label-l2-start" class="diagram-label-3d">0 mm</span>
+            <span id="label-l2-end" class="diagram-label-3d">L2 = ? mm</span>
+            <span id="label-h-value" class="diagram-label-3d">h = ? mm</span>
+        </div>
+
+        <div class="footer">Powered by PULSONIC | Based on BS EN 12504-4:2004 | 3D View powered by Three.js</div>
+    </div>
+
+    <!-- Load Three.js library and OrbitControls -->
+    <!-- Use unpkg CDN for simplicity -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.161.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <!-- Main Script (including Three.js logic) -->
+    <script type="module">
+        // Import Three.js core and OrbitControls addon
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // --- Global Variables ---
+        let scene, camera, renderer, controls;
+        let concreteBlock, crackPlane, transducerLeft, transducerRight;
+        let labelL2Start, labelL2End, labelHValue; // HTML Label elements
+        let diagramSection, diagramCanvas;
+
+        const VISUAL_WIDTH_SCALE = 5; // How wide the L2 distance appears in 3D
+        const VISUAL_DEPTH_SCALE = 3; // How deep the concrete block appears
+        const CRACK_PLANE_WIDTH = 0.1; // Visual width of the crack plane
+
+        // --- Initialization ---
+        function initThreeJS() {
+            diagramCanvas = document.getElementById('diagramCanvas');
+            if (!diagramCanvas) {
+                console.error("Canvas element not found!");
+                return;
+            }
+
+             // Get label elements
+            labelL2Start = document.getElementById('label-l2-start');
+            labelL2End = document.getElementById('label-l2-end');
+            labelHValue = document.getElementById('label-h-value');
+
+
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf0f4f8); // Match page background slightly
+
+            // Camera
+            const aspectRatio = diagramCanvas.clientWidth / diagramCanvas.clientHeight;
+            camera = new THREE.PerspectiveCamera(50, aspectRatio, 0.1, 100);
+            camera.position.set(0, 3, 8); // Positioned looking down slightly
+            camera.lookAt(0, 0, 0);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ canvas: diagramCanvas, antialias: true });
+            renderer.setSize(diagramCanvas.clientWidth, diagramCanvas.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio); // Adjust for high-DPI screens
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 10, 7.5);
+            scene.add(directionalLight);
+
+            // Controls
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true; // Smooths rotation
+            controls.dampingFactor = 0.1;
+            controls.screenSpacePanning = false; // Prevent weird panning
+            controls.target.set(0, 0, 0); // Focus controls on the center
+
+            // Create Initial Objects (Placeholders)
+            createInitialObjects();
+
+            // Start Animation Loop
+            animate();
+
+            // Handle window resize
+            window.addEventListener('resize', onWindowResize, false);
+        }
+
+        function createInitialObjects() {
+            // Concrete Block
+            const blockGeometry = new THREE.BoxGeometry(VISUAL_WIDTH_SCALE * 1.2, VISUAL_DEPTH_SCALE, VISUAL_DEPTH_SCALE * 0.8); // Slightly wider/deeper than L2 scale
+            const blockMaterial = new THREE.MeshStandardMaterial({ color: 0xd1d5db, roughness: 0.8 }); // Concrete color
+            concreteBlock = new THREE.Mesh(blockGeometry, blockMaterial);
+            concreteBlock.position.y = -VISUAL_DEPTH_SCALE / 2; // Position top surface at y=0
+            scene.add(concreteBlock);
+
+            // Transducers (Cylinders)
+            const transducerRadius = 0.15;
+            const transducerHeight = 0.1;
+            const transducerGeometry = new THREE.CylinderGeometry(transducerRadius, transducerRadius, transducerHeight, 16);
+            const transducerMaterial = new THREE.MeshStandardMaterial({ color: 0x374151, roughness: 0.5 }); // Dark grey
+
+            transducerLeft = new THREE.Mesh(transducerGeometry, transducerMaterial);
+            transducerLeft.position.set(-VISUAL_WIDTH_SCALE / 2, transducerHeight / 2, 0); // Position on surface
+            transducerLeft.rotation.x = Math.PI / 2; // Lay flat initially (though Cylinder default is Y-up)
+            scene.add(transducerLeft);
+
+            transducerRight = new THREE.Mesh(transducerGeometry, transducerMaterial);
+            transducerRight.position.set(VISUAL_WIDTH_SCALE / 2, transducerHeight / 2, 0);
+            transducerRight.rotation.x = Math.PI / 2;
+            scene.add(transducerRight);
+
+            // Crack Plane (initially very small depth)
+            const crackGeometry = new THREE.PlaneGeometry(CRACK_PLANE_WIDTH, 0.01); // Start with almost no height
+            const crackMaterial = new THREE.MeshBasicMaterial({
+                color: 0xef4444, // Red crack
+                side: THREE.DoubleSide, // Visible from both sides
+                transparent: true,
+                opacity: 0.8
+            });
+            crackPlane = new THREE.Mesh(crackGeometry, crackMaterial);
+            crackPlane.position.set(0, -0.005, 0); // Center x=0, slightly below surface
+             crackPlane.rotation.y = Math.PI / 2; // Rotate to face camera initially if needed (Plane default is XY)
+            scene.add(crackPlane);
+        }
+
+        function updateDiagram3D(l2, h) {
+            // --- Update 3D Objects ---
+
+            // 1. Update Transducer Positions based on L2
+            // Normalize L2 to fit the visual scale
+            const visualL2 = VISUAL_WIDTH_SCALE; // L2 input maps to this width
+            transducerLeft.position.x = -visualL2 / 2;
+            transducerRight.position.x = visualL2 / 2;
+
+            // 2. Update Crack Plane Scale & Position based on H
+            // Determine a scaling factor: map max expected H to visual depth
+            const maxExpectedH = l2; // Rough assumption: crack depth won't exceed L2
+            const visualMaxH = VISUAL_DEPTH_SCALE * 0.9; // Max visual depth for crack
+            const h_scaled = (h / maxExpectedH) * visualMaxH; // Calculate visual height
+
+            // Clamp scaled height to prevent extreme values if assumption is wrong
+            const finalVisualH = Math.min(Math.max(h_scaled, 0.01), visualMaxH); // Ensure min height > 0
+
+            crackPlane.scale.y = finalVisualH / 0.01; // Scale based on initial geometry height (0.01)
+            // Position the crack so its top edge is at y=0 and it extends downwards
+            crackPlane.position.y = - (finalVisualH / 2);
+
+            // --- Update HTML Overlay Labels ---
+             updateOverlayLabels(l2, h);
+        }
+
+         function updateOverlayLabels(l2, h) {
+             if (!renderer || !camera || !labelL2Start || !labelL2End || !labelHValue) return;
+
+             const canvas = renderer.domElement;
+             const canvasBounds = canvas.getBoundingClientRect();
+
+             // Function to convert 3D world position to 2D screen position relative to canvas
+             const toScreenPosition = (object) => {
+                 const vector = new THREE.Vector3();
+                 object.getWorldPosition(vector); // Get world position
+                 vector.project(camera); // Project onto camera's normalized device coordinates (-1 to +1)
+
+                 // Convert to pixel coordinates relative to canvas
+                 const x = ((vector.x * 0.5 + 0.5) * canvas.clientWidth);
+                 const y = ((-vector.y * 0.5 + 0.5) * canvas.clientHeight);
+                 return { x, y };
+             };
+
+             // Calculate positions for labels
+             const posL2Start = toScreenPosition(transducerLeft);
+             const posL2End = toScreenPosition(transducerRight);
+              // For H label, use the crack plane's position but adjust Y upwards slightly
+             const crackTopPos = new THREE.Vector3(crackPlane.position.x, 0, crackPlane.position.z); // Point above crack top
+             const posH = toScreenPosition({ getWorldPosition: (v) => v.copy(crackTopPos) });
+
+
+             // Position Start Label (0 mm)
+             labelL2Start.style.display = 'block';
+             labelL2Start.style.left = `${posL2Start.x}px`;
+             labelL2Start.style.top = `${posL2Start.y - 20}px`; // Offset above transducer
+
+             // Position End Label (L2 value)
+             labelL2End.style.display = 'block';
+             labelL2End.textContent = `${l2.toFixed(0)} mm`;
+             labelL2End.style.left = `${posL2End.x}px`;
+             labelL2End.style.top = `${posL2End.y - 20}px`; // Offset above transducer
+
+             // Position H Label
+             labelHValue.style.display = 'block';
+             labelHValue.textContent = `h = ${h.toFixed(2)} mm`;
+             // Position slightly to the right of the crack center and vertically centered relative to visual depth
+             labelHValue.style.left = `${posH.x + 20}px`; // Offset right
+             labelHValue.style.top = `${posH.y + (VISUAL_DEPTH_SCALE * 15)}px`; // Adjust vertical offset based on visual scale
+
+         }
+
+
+        function onWindowResize() {
+            if (!camera || !renderer || !diagramCanvas) return;
+            // Update camera aspect ratio and renderer size
+            camera.aspect = diagramCanvas.clientWidth / diagramCanvas.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(diagramCanvas.clientWidth, diagramCanvas.clientHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate); // Loop
+            if (controls) controls.update(); // Update controls if damping enabled
+            if (renderer && scene && camera) renderer.render(scene, camera); // Render scene
+        }
+
+
+        // --- Existing Calculator Logic ---
+        document.addEventListener('DOMContentLoaded', function() {
+            diagramSection = document.getElementById('diagramSection');
+            const form = document.getElementById('crackForm');
+
+            if (diagramSection) diagramSection.style.display = 'none'; // Hide initially
+
+            if (form) {
+                form.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    calculateCrackDepth();
+                });
+            } else { console.error("Form 'crackForm' not found."); }
+
+            // --- Initialize Three.js ---
+            initThreeJS();
+            // --- End Three.js Init ---
+
+
+            function calculateCrackDepth() {
+                const t1Input = document.getElementById('t1');
+                const l1Input = document.getElementById('l1');
+                const t2Input = document.getElementById('t2');
+                const l2Input = document.getElementById('l2');
+
+                const t1 = parseFloat(t1Input.value);
+                const l1 = parseFloat(l1Input.value);
+                const t2 = parseFloat(t2Input.value);
+                const l2 = parseFloat(l2Input.value);
+
+                // --- Start Validation ---
+                let isValid = true;
+                let errorMsg = "";
+                if (isNaN(t1) || isNaN(l1) || isNaN(t2) || isNaN(l2)) { isValid = false; errorMsg = "Error: All inputs must be valid numbers."; }
+                else if ( [t1Input.value, l1Input.value, t2Input.value, l2Input.value].some(val => val.trim() === '') ) { isValid = false; errorMsg = "Error: All fields are required."; }
+                else if (t1 <= 0 || l1 <= 0 || t2 <= 0 || l2 <= 0) { isValid = false; errorMsg = "Error: All values must be greater than zero."; }
+                if (!isValid) { showResult(errorMsg, true); return; }
+                // --- End Validation ---
+
+                const velocity = l1 / t1;
+                if (!isFinite(velocity) || velocity <= 0) { showResult("Error: Cannot calculate velocity. Check t1 and l1.", true); return; }
+
+                const t1Scaled = l2 / velocity;
+                const a = l2 / 2;
+                const ratio = t2 / t1Scaled;
+
+                 if (ratio <= 1 || !isFinite(ratio)) {
+                    const errorDetail = isFinite(t1Scaled) ? `(t2/t1_scaled ratio: ${ratio.toFixed(3)})` : '(Invalid t1_scaled)';
+                    showResult(`Error: t2 must be > calculated direct time. ${errorDetail}`, true);
+                    return;
+                 }
+
+                const h = a * Math.sqrt(ratio * ratio - 1);
+
+                 if (!isFinite(h)) { showResult("Error: Calculation resulted in an invalid depth.", true); return; }
+
+                // Success
+                showResult(`Crack Depth: ${h.toFixed(2)} mm`, false);
+
+                // --- Update 3D Diagram ---
+                if (diagramSection) diagramSection.style.display = 'block'; // Show section
+                updateDiagram3D(l2, h); // Update 3D objects and labels
+                // --- End Update ---
+            }
+
+            function showResult(message, isError = false) {
+                const resultDiv = document.getElementById('result');
+                const iconElement = resultDiv.querySelector('i');
+                const textElement = resultDiv.querySelector('span');
+                textElement.textContent = message;
+
+                 if (isError) {
+                    resultDiv.classList.add('error');
+                    iconElement.className = "fas fa-exclamation-triangle";
+                    // Hide 3D diagram on error
+                    if (diagramSection) diagramSection.style.display = 'none';
+                     // Hide labels on error
+                     if (labelL2Start) labelL2Start.style.display = 'none';
+                     if (labelL2End) labelL2End.style.display = 'none';
+                     if (labelHValue) labelHValue.style.display = 'none';
+
+                 } else {
+                    resultDiv.classList.remove('error');
+                    iconElement.className = "fas fa-check-circle";
+                    // Diagram visibility handled in calculateCrackDepth on success
+                 }
+            }
+        });
+
+    </script>
+
+</body>
+</html>
