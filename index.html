@@ -3,271 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crack Depth Calculator (3D v2) - PULSONIC</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <title>Minimal Submit Test</title>
     <style>
-        /* CSS remains identical to the previous 3D version */
-        :root {
-            --primary-color: #3498db; --primary-dark: #2980b9; --secondary-color: #e0f2fe;
-            --text-dark: #2c3e50; --text-light: #5a6878; --border-color: #cbd5e0;
-            --background-light: #ffffff; --background-gradient-start: #eaf0f7; --background-gradient-end: #d8e2ec;
-            --success-bg: #e0f2fe; --success-border: #a0cff5; --success-icon: #3498db;
-            --error-bg: #feefec; --error-border: #f5a0a4; --error-icon: #e74c3c;
-            --diagram-concrete: #e2e8f0; --diagram-transducer: #374151;
-            --diagram-crack: #e74c3c; --diagram-label: #4b5563;
-        }
-         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-         body { background: linear-gradient(135deg, var(--background-gradient-start), var(--background-gradient-end)); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; font-size: 16px; color: var(--text-dark); }
-        .container { background: var(--background-light); border-radius: 15px; box-shadow: 0 15px 35px rgba(44, 62, 80, 0.15); padding: 40px; width: 100%; max-width: 500px; transition: transform 0.3s ease, box-shadow 0.3s ease; border: 1px solid #e2e8f0; }
-        .container:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(44, 62, 80, 0.2); }
-        h1 { text-align: center; color: var(--text-dark); margin-bottom: 35px; font-size: 26px; font-weight: 600; letter-spacing: 0.5px; }
-        h1 i { margin-right: 10px; color: var(--primary-color); }
-        .input-group { margin-bottom: 25px; }
-        label { display: block; color: var(--text-light); font-size: 14px; margin-bottom: 8px; font-weight: 500; }
-        input[type="number"] { width: 100%; padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 16px; transition: border-color 0.3s ease, box-shadow 0.3s ease; appearance: textfield; -moz-appearance: textfield; }
-        input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        input:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2); }
-        button[type="submit"] { width: 100%; padding: 14px; background: linear-gradient(180deg, var(--primary-color), var(--primary-dark)); border: none; border-radius: 8px; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.3s ease, transform 0.1s ease, box-shadow 0.3s ease; box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08); }
-        button[type="submit"]:hover { background: linear-gradient(180deg, #4fa8e0, #318fd6); box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08); }
-        button[type="submit"]:active { transform: translateY(1px); }
-        #result { margin-top: 30px; font-size: 16px; padding: 15px 20px; border-radius: 8px; display: flex; align-items: center; justify-content: flex-start; min-height: 58px; width: 100%; line-height: 1.5; word-wrap: break-word; transition: background-color 0.3s ease, border-color 0.3s ease; background-color: var(--success-bg); border: 1px solid var(--success-border); color: var(--text-dark); }
-        #result i { font-size: 20px; margin-right: 12px; color: var(--success-icon); flex-shrink: 0; }
-        #result.error { background-color: var(--error-bg); border-color: var(--error-border); color: #a54844; }
-        #result.error i { color: var(--error-icon); }
-        .footer { text-align: center; margin-top: 30px; font-size: 12px; color: var(--text-light); }
-        #diagramSection { margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border-color); display: none; position: relative; }
-        #diagramSection h2 { font-size: 16px; font-weight: 600; color: var(--text-dark); margin-bottom: 15px; text-align: center; }
-        #diagramCanvas { display: block; width: 100% !important; max-width: 400px; height: 250px !important; margin: 0 auto; background-color: #f8fafd; border-radius: 5px; cursor: grab; }
-        #diagramCanvas:active { cursor: grabbing; }
-        .diagram-label-3d { position: absolute; font-size: 10px; font-weight: 500; color: var(--diagram-label); background-color: rgba(255, 255, 255, 0.85); padding: 2px 4px; border-radius: 3px; white-space: nowrap; text-align: center; pointer-events: none; transform: translateX(-50%); display: none; }
-        @media (max-width: 480px) { #diagramCanvas { height: 200px !important; } .diagram-label-3d { font-size: 9px; } }
+        body { font-family: sans-serif; padding: 20px; }
+        .container { max-width: 400px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { padding: 10px 15px; cursor: pointer; }
+        #message { margin-top: 20px; padding: 10px; background-color: #e0f7fa; border: 1px solid #b2ebf2; display: none; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1><i class="fas fa-ruler-combined"></i>Crack Depth Calculator (3D v2)</h1>
-        <!-- Added onsubmit="return false;" as fallback -->
-        <form id="crackForm" onsubmit="return false;">
-             <div class="input-group"><label for="t1">Transit Time in Sound Concrete (t1, µs):</label><input type="number" id="t1" step="any" min="0.00001" required placeholder="e.g., 25"></div>
-             <div class="input-group"><label for="l1">Sound Concrete Spacing (L1, mm):</label><input type="number" id="l1" step="any" min="0.00001" required placeholder="e.g., 100"></div>
-             <div class="input-group"><label for="t2">Transit Time Across Crack (t2, µs):</label><input type="number" id="t2" step="any" min="0.00001" required placeholder="e.g., 70.7"></div>
-             <div class="input-group"><label for="l2">Cracked Concrete Spacing (L2, mm):</label><input type="number" id="l2" step="any" min="0.00001" required placeholder="e.g., 200"></div>
-             <!-- Give button an ID -->
-             <button type="submit" id="calculateButton">Calculate Crack Depth</button>
+        <h1>Minimal Form Test</h1>
+        <p>Enter any values and click Calculate. The page should NOT refresh.</p>
+
+        <!-- Added onsubmit="return false;" for extra safety -->
+        <form id="testForm" onsubmit="console.log('Form onsubmit triggered (should be prevented)'); return false;">
+            <div class="input-group">
+                <label for="value1">Value 1:</label>
+                <input type="number" id="value1" required>
+            </div>
+            <div class="input-group">
+                <label for="value2">Value 2:</label>
+                <input type="number" id="value2" required>
+            </div>
+            <!-- Added ID to the button -->
+            <button type="submit" id="testButton">Calculate (Test)</button>
         </form>
 
-        <div id="result"><i class="fas fa-info-circle"></i><span>Result will appear here</span></div>
-
-        <div id="diagramSection">
-            <h2>3D Schematic View</h2>
-            <canvas id="diagramCanvas"></canvas>
-            <span id="label-l2-start" class="diagram-label-3d">0 mm</span>
-            <span id="label-l2-end" class="diagram-label-3d">L2 = ? mm</span>
-            <span id="label-h-value" class="diagram-label-3d">h = ? mm</span>
-        </div>
-
-        <div class="footer">Powered by PULSONIC | Based on BS EN 12504-4:2004 | 3D View powered by Three.js</div>
+        <div id="message">JavaScript is working and prevented refresh!</div>
     </div>
 
-    <script type="importmap">
-        { "imports": { "three": "https://unpkg.com/three@0.161.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/" } }
-    </script>
+    <!-- Use standard script with defer -->
+    <script defer>
+        console.log("--- Minimal Test Script Started ---");
 
-    <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        const form = document.getElementById('testForm');
+        const button = document.getElementById('testButton');
+        const messageDiv = document.getElementById('message');
 
-        // --- Module scope variables ---
-        let scene, camera, renderer, controls;
-        let concreteBlock, crackPlane, transducerLeft, transducerRight;
-        let labelL2Start, labelL2End, labelHValue;
-        let diagramSection, diagramCanvas;
-        const VISUAL_WIDTH_SCALE = 5; const VISUAL_DEPTH_SCALE = 3; const CRACK_PLANE_WIDTH = 0.1;
-
-        // --- Function Definitions ---
-        // initThreeJS, createInitialObjects, updateDiagram3D, updateOverlayLabels,
-        // onWindowResize, animate - Remain IDENTICAL to the previous 3D version
-        function initThreeJS() {
-            diagramCanvas = document.getElementById('diagramCanvas');
-            if (!diagramCanvas) { console.error("Canvas element not found!"); return; }
-            labelL2Start = document.getElementById('label-l2-start'); labelL2End = document.getElementById('label-l2-end'); labelHValue = document.getElementById('label-h-value');
-            scene = new THREE.Scene(); scene.background = new THREE.Color(0xf0f4f8);
-            const aspectRatio = diagramCanvas.clientWidth / diagramCanvas.clientHeight;
-            camera = new THREE.PerspectiveCamera(50, aspectRatio, 0.1, 100); camera.position.set(0, 3, 8); camera.lookAt(0, 0, 0);
-            renderer = new THREE.WebGLRenderer({ canvas: diagramCanvas, antialias: true }); renderer.setSize(diagramCanvas.clientWidth, diagramCanvas.clientHeight); renderer.setPixelRatio(window.devicePixelRatio);
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7); scene.add(ambientLight);
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); directionalLight.position.set(5, 10, 7.5); scene.add(directionalLight);
-            controls = new OrbitControls(camera, renderer.domElement); controls.enableDamping = true; controls.dampingFactor = 0.1; controls.screenSpacePanning = false; controls.target.set(0, 0, 0);
-            createInitialObjects();
-            animate();
-            window.addEventListener('resize', onWindowResize, false);
-        }
-        function createInitialObjects() {
-            const blockGeometry = new THREE.BoxGeometry(VISUAL_WIDTH_SCALE * 1.2, VISUAL_DEPTH_SCALE, VISUAL_DEPTH_SCALE * 0.8);
-            const blockMaterial = new THREE.MeshStandardMaterial({ color: 0xd1d5db, roughness: 0.8 });
-            concreteBlock = new THREE.Mesh(blockGeometry, blockMaterial); concreteBlock.position.y = -VISUAL_DEPTH_SCALE / 2; scene.add(concreteBlock);
-            const transducerRadius = 0.15; const transducerHeight = 0.1; const transducerGeometry = new THREE.CylinderGeometry(transducerRadius, transducerRadius, transducerHeight, 16);
-            const transducerMaterial = new THREE.MeshStandardMaterial({ color: 0x374151, roughness: 0.5 });
-            transducerLeft = new THREE.Mesh(transducerGeometry, transducerMaterial); transducerLeft.position.set(-VISUAL_WIDTH_SCALE / 2, transducerHeight / 2, 0); scene.add(transducerLeft);
-            transducerRight = new THREE.Mesh(transducerGeometry, transducerMaterial); transducerRight.position.set(VISUAL_WIDTH_SCALE / 2, transducerHeight / 2, 0); scene.add(transducerRight);
-            const crackGeometry = new THREE.PlaneGeometry(CRACK_PLANE_WIDTH, 0.01);
-            const crackMaterial = new THREE.MeshBasicMaterial({ color: 0xef4444, side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
-            crackPlane = new THREE.Mesh(crackGeometry, crackMaterial); crackPlane.position.set(0, -0.005, 0); scene.add(crackPlane);
-        }
-        function updateDiagram3D(l2, h) {
-            const visualL2 = VISUAL_WIDTH_SCALE; transducerLeft.position.x = -visualL2 / 2; transducerRight.position.x = visualL2 / 2;
-            const maxExpectedH = l2 > 0 ? l2 : 1; // Avoid division by zero if l2 is 0
-            const visualMaxH = VISUAL_DEPTH_SCALE * 0.9;
-            const h_scaled = (h / maxExpectedH) * visualMaxH;
-            const finalVisualH = Math.min(Math.max(h_scaled, 0.01), visualMaxH);
-            crackPlane.scale.y = finalVisualH / 0.01; crackPlane.position.y = - (finalVisualH / 2);
-            updateOverlayLabels(l2, h);
-        }
-         function updateOverlayLabels(l2, h) {
-             if (!renderer || !camera || !labelL2Start || !labelL2End || !labelHValue || !transducerLeft || !transducerRight || !crackPlane) return;
-             const canvas = renderer.domElement;
-             const toScreenPosition = (object) => {
-                 const vector = new THREE.Vector3(); object.getWorldPosition(vector); vector.project(camera);
-                 const x = ((vector.x * 0.5 + 0.5) * canvas.clientWidth); const y = ((-vector.y * 0.5 + 0.5) * canvas.clientHeight); return { x, y };
-             };
-             try {
-                 const posL2Start = toScreenPosition(transducerLeft); const posL2End = toScreenPosition(transducerRight);
-                 const crackTopPos = new THREE.Vector3(crackPlane.position.x, 0, crackPlane.position.z); const posH = toScreenPosition({ getWorldPosition: (v) => v.copy(crackTopPos) });
-                 labelL2Start.style.display = 'block'; labelL2Start.style.left = `${posL2Start.x}px`; labelL2Start.style.top = `${posL2Start.y - 20}px`;
-                 labelL2End.style.display = 'block'; labelL2End.textContent = `${l2.toFixed(0)} mm`; labelL2End.style.left = `${posL2End.x}px`; labelL2End.style.top = `${posL2End.y - 20}px`;
-                 labelHValue.style.display = 'block'; labelHValue.textContent = `h = ${h.toFixed(2)} mm`; labelHValue.style.left = `${posH.x + 20}px`; labelHValue.style.top = `${posH.y + (VISUAL_DEPTH_SCALE * 15)}px`;
-            } catch (e) {
-                console.error("Error calculating screen position for labels:", e);
-                // Hide labels if calculation fails
-                if (labelL2Start) labelL2Start.style.display = 'none';
-                if (labelL2End) labelL2End.style.display = 'none';
-                if (labelHValue) labelHValue.style.display = 'none';
-            }
-         }
-        function onWindowResize() {
-            if (!camera || !renderer || !diagramCanvas) return;
-            camera.aspect = diagramCanvas.clientWidth / diagramCanvas.clientHeight; camera.updateProjectionMatrix();
-            renderer.setSize(diagramCanvas.clientWidth, diagramCanvas.clientHeight);
-        }
-        function animate() { requestAnimationFrame(animate); if (controls) controls.update(); if (renderer && scene && camera) renderer.render(scene, camera); }
-
-        function calculateCrackDepth() {
-            // Calculation logic remains identical to previous 3D version
-            console.log("CalculateCrackDepth function called.");
-            const t1Input = document.getElementById('t1'); const l1Input = document.getElementById('l1');
-            const t2Input = document.getElementById('t2'); const l2Input = document.getElementById('l2');
-            const t1 = parseFloat(t1Input.value); const l1 = parseFloat(l1Input.value);
-            const t2 = parseFloat(t2Input.value); const l2 = parseFloat(l2Input.value);
-
-            let isValid = true; let errorMsg = "";
-            if (isNaN(t1) || isNaN(l1) || isNaN(t2) || isNaN(l2)) { isValid = false; errorMsg = "Error: All inputs must be valid numbers."; }
-            else if ( [t1Input.value, l1Input.value, t2Input.value, l2Input.value].some(val => val.trim() === '') ) { isValid = false; errorMsg = "Error: All fields are required."; }
-            else if (t1 <= 0 || l1 <= 0 || t2 <= 0 || l2 <= 0) { isValid = false; errorMsg = "Error: All values must be greater than zero."; }
-            if (!isValid) { console.log("Validation failed:", errorMsg); showResult(errorMsg, true); return; }
-
-            const velocity = l1 / t1;
-            if (!isFinite(velocity) || velocity <= 0) { console.log("Velocity calculation failed."); showResult("Error: Cannot calculate velocity. Check t1 and l1.", true); return; }
-
-            const t1Scaled = l2 / velocity; const a = l2 / 2; const ratio = t2 / t1Scaled;
-            if (ratio <= 1 || !isFinite(ratio)) {
-                const errorDetail = isFinite(t1Scaled) ? `(t2/t1_scaled ratio: ${ratio.toFixed(3)})` : '(Invalid t1_scaled)';
-                console.log("Ratio validation failed."); showResult(`Error: t2 must be > calculated direct time. ${errorDetail}`, true); return;
-            }
-
-            const h = a * Math.sqrt(ratio * ratio - 1);
-            if (!isFinite(h)) { console.log("Depth calculation failed (NaN/Infinity)."); showResult("Error: Calculation resulted in an invalid depth.", true); return; }
-
-            console.log("Calculation successful. Depth:", h.toFixed(2));
-            showResult(`Crack Depth: ${h.toFixed(2)} mm`, false);
-            if (diagramSection) diagramSection.style.display = 'block';
-            try {
-                 updateDiagram3D(l2, h);
-                 console.log("3D diagram updated.");
-            } catch(err) {
-                 console.error("Error updating 3D diagram:", err);
-                 showResult(`Crack Depth: ${h.toFixed(2)} mm. (Error updating 3D view)`, false);
-            }
-        }
-
-        function showResult(message, isError = false) {
-            // showResult logic remains identical to previous 3D version
-            console.log(`ShowResult called. Message: "${message}", IsError: ${isError}`);
-            const resultDiv = document.getElementById('result');
-            const iconElement = resultDiv.querySelector('i');
-            const textElement = resultDiv.querySelector('span');
-            textElement.textContent = message;
-            if (!diagramSection) { diagramSection = document.getElementById('diagramSection'); }
-            if (!labelL2Start) labelL2Start = document.getElementById('label-l2-start');
-            if (!labelL2End) labelL2End = document.getElementById('label-l2-end');
-            if (!labelHValue) labelHValue = document.getElementById('label-h-value');
-             if (isError) {
-                resultDiv.classList.add('error'); iconElement.className = "fas fa-exclamation-triangle";
-                if (diagramSection) diagramSection.style.display = 'none';
-                if (labelL2Start) labelL2Start.style.display = 'none';
-                if (labelL2End) labelL2End.style.display = 'none';
-                if (labelHValue) labelHValue.style.display = 'none';
-             } else {
-                resultDiv.classList.remove('error'); iconElement.className = "fas fa-check-circle";
-             }
-        }
-
-        // --- Main Execution Logic ---
-        console.log("Script module execution started.");
-
-        // Get essential elements
-        diagramSection = document.getElementById('diagramSection');
-        const form = document.getElementById('crackForm');
-        const calculateButton = document.getElementById('calculateButton');
-
-        // Initial setup verification
-        if (!form) console.error("CRITICAL: Form element not found!");
-        if (!calculateButton) console.error("CRITICAL: Calculate button not found!");
-        if (diagramSection) diagramSection.style.display = 'none';
-        else console.warn("Diagram section element not found.");
-
-        // Attach listener to the BUTTON's click event
-        if (calculateButton && form) {
-            calculateButton.addEventListener('click', function(event) {
-                console.log("Calculate BUTTON clicked.");
-
-                // Prevent default regardless of button type or form context
-                event.preventDefault();
-                console.log("Default action prevented on button click.");
-
-                // Use HTML5 validation API before proceeding
-                if (!form.checkValidity()) {
-                    console.log("Form is invalid based on HTML5 validation.");
-                    form.reportValidity(); // Show browser validation messages
-                    showResult("Error: Please fill all required fields correctly.", true);
-                    return; // Stop processing
-                 }
-
-                // Wrap calculation logic in try...catch
-                try {
-                    console.log("Form valid, calling calculateCrackDepth...");
-                    calculateCrackDepth();
-                    console.log("calculateCrackDepth finished without throwing error in handler.");
-                } catch (error) {
-                    console.error("!!! Error caught by click handler during calculateCrackDepth execution:", error);
-                    showResult("An unexpected error occurred. Check console.", true);
-                }
-            });
-            console.log("Click event listener attached to calculateButton.");
+        // Check if elements were found
+        if (!form) {
+            console.error("CRITICAL: Form 'testForm' not found!");
+            alert("Error: Form element missing. Cannot proceed."); // Use alert for immediate feedback
         } else {
-             console.error("Could not attach listener: Form or Button not found.");
+            console.log("Form 'testForm' found.");
         }
 
-        // Initialize Three.js environment
-        try {
-            initThreeJS();
-            console.log("Three.js initialized successfully.");
-        } catch (error) {
-            console.error("Error during Three.js initialization:", error);
-            // Attempt to show error even if 3D fails
-             try { showResult("Error initializing 3D view. Calculator may work.", true); } catch (e) {}
+        if (!button) {
+            console.error("CRITICAL: Button 'testButton' not found!");
+             alert("Error: Button element missing. Cannot proceed."); // Use alert
+        } else {
+            console.log("Button 'testButton' found.");
         }
 
-        console.log("Script module execution finished.");
+        if (!messageDiv) {
+            console.warn("Message div 'message' not found.");
+        }
+
+        // Attach listener only if button exists
+        if (button) {
+            button.addEventListener('click', function(event) {
+                console.log("--- Button Clicked ---");
+
+                // 1. Prevent Default Action
+                event.preventDefault();
+                console.log("event.preventDefault() CALLED.");
+
+                // 2. Basic Check: Does the form think it's valid? (Optional)
+                if (form && form.checkValidity()) {
+                    console.log("Form reported as valid by checkValidity().");
+                } else if (form) {
+                    console.log("Form reported as INVALID by checkValidity().");
+                    form.reportValidity(); // Show browser default validation messages
+                }
+
+                // 3. Visual Feedback: Show the message div
+                if (messageDiv) {
+                    messageDiv.textContent = 'Button clicked! Default prevented. Timestamp: ' + Date.now();
+                    messageDiv.style.display = 'block'; // Make it visible
+                    messageDiv.style.backgroundColor = '#ccffcc'; // Green background
+                    console.log("Message div displayed.");
+                } else {
+                    console.error("Cannot show message, div not found.");
+                    alert("Button Click Handled (No Message Div Found)");
+                }
+
+                 console.log("--- Button Click Handler Finished ---");
+
+            }); // End of event listener function
+
+            console.log("Event listener attached to button.");
+
+        } else {
+            console.error("Could not attach listener because button was not found.");
+        }
+
+        console.log("--- Minimal Test Script Finished Setup ---");
 
     </script>
 
