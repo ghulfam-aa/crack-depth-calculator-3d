@@ -3,26 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crack Depth Calculator (3D - Fix 1)</title>
+    <title>Crack Depth Calculator (3D - Visuals)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-        /* CSS is IDENTICAL to the previous version */
-        :root { /* ... colors ... */ }
-        * { /* ... reset ... */ }
-        body { /* ... styles ... */ }
-        .container { /* ... styles ... */ }
-        /* ... all other styles ... */
-        #diagramCanvas { /* ... styles ... */ }
-        .diagram-label-3d { /* ... styles ... */ }
-        /* ... media queries ... */
-         :root {
+        /* Basic CSS is IDENTICAL */
+         :root { /* ... colors ... */
             --primary-color: #3498db; --primary-dark: #2980b9; --secondary-color: #e0f2fe;
             --text-dark: #2c3e50; --text-light: #5a6878; --border-color: #cbd5e0;
             --background-light: #ffffff; --background-gradient-start: #eaf0f7; --background-gradient-end: #d8e2ec;
             --success-bg: #e0f2fe; --success-border: #a0cff5; --success-icon: #3498db;
             --error-bg: #feefec; --error-border: #f5a0a4; --error-icon: #e74c3c;
-            --diagram-concrete: #e2e8f0; --diagram-transducer: #374151;
-            --diagram-crack: #e74c3c; --diagram-label: #4b5563;
+            --diagram-concrete: #cfd8dc; /* Slightly different grey */
+            --diagram-transducer: #455a64; /* Darker blue-grey */
+            --diagram-crack: #b71c1c;     /* Darker red */
+            --diagram-label: #37474f;   /* Darker label */
         }
          * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
          body { background: linear-gradient(135deg, var(--background-gradient-start), var(--background-gradient-end)); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; font-size: 16px; color: var(--text-dark); }
@@ -43,15 +37,33 @@
         #result.error { background-color: var(--error-bg); border-color: var(--error-border); color: #a54844; }
         #result.error i { color: var(--error-icon); }
         .footer { text-align: center; margin-top: 30px; font-size: 12px; color: var(--text-light); }
-        #diagramSection { margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border-color); display: none; position: relative; } /* position: relative is key for labels */
+        #diagramSection { margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border-color); display: none; position: relative; }
         #diagramSection h2 { font-size: 16px; font-weight: 600; color: var(--text-dark); margin-bottom: 15px; text-align: center; }
-        #diagramCanvas { display: block; width: 100% !important; max-width: 400px; height: 250px !important; margin: 0 auto; background-color: #f8fafd; border-radius: 5px; cursor: grab; }
+        #diagramCanvas { display: block; width: 100% !important; max-width: 400px; height: 250px !important; margin: 0 auto; background-color: #eceff1; /* Light grey background */ border-radius: 5px; cursor: grab; }
         #diagramCanvas:active { cursor: grabbing; }
-        .diagram-label-3d { /* position: absolute MUST be relative to #diagramSection */ position: absolute; font-size: 10px; font-weight: 500; color: var(--diagram-label); background-color: rgba(255, 255, 255, 0.85); padding: 2px 4px; border-radius: 3px; white-space: nowrap; text-align: center; pointer-events: none; transform: translateX(-50%); /* Centering assumes left is set correctly */ display: none; z-index: 10; /* Ensure labels are above canvas */ }
-        @media (max-width: 480px) { #diagramCanvas { height: 200px !important; } .diagram-label-3d { font-size: 9px; } }
+        /* --- UPDATED Label CSS --- */
+        .diagram-label-3d {
+             position: absolute; /* Positioned relative to #diagramSection */
+             font-size: 11px; /* Slightly larger */
+             font-weight: 500;
+             color: var(--diagram-label);
+             background-color: rgba(255, 255, 255, 0.88); /* More opaque */
+             padding: 2px 5px; /* More padding */
+             border-radius: 3px;
+             white-space: nowrap;
+             text-align: center;
+             pointer-events: none;
+             /* Use translate for centering AFTER left/top are set */
+             transform: translate(-50%, -50%);
+             display: none;
+             z-index: 10;
+             transition: left 0.1s linear, top 0.1s linear; /* Smooth position changes slightly */
+        }
+        @media (max-width: 480px) { #diagramCanvas { height: 200px !important; } .diagram-label-3d { font-size: 10px; } }
     </style>
 </head>
 <body>
+    <!-- HTML Structure is IDENTICAL -->
     <div class="container">
         <h1><i class="fas fa-ruler-combined"></i>Crack Depth Calculator (3D)</h1>
         <form id="crackForm" onsubmit="return false;">
@@ -61,18 +73,14 @@
              <div class="input-group"><label for="l2">Crack Spacing (L2, mm):</label><input type="number" id="l2" step="any" min="0.00001" required placeholder="e.g., 200"></div>
              <button type="submit" id="calculateButton">Calculate Crack Depth</button>
         </form>
-
         <div id="result"><i class="fas fa-info-circle"></i><span>Result will appear here</span></div>
-
         <div id="diagramSection">
             <h2>3D Schematic View</h2>
             <canvas id="diagramCanvas"></canvas>
-            <!-- Labels are positioned relative to diagramSection -->
             <span id="label-l2-start" class="diagram-label-3d">0 mm</span>
             <span id="label-l2-end" class="diagram-label-3d">L2 = ? mm</span>
             <span id="label-h-value" class="diagram-label-3d">h = ? mm</span>
         </div>
-
         <div class="footer">Powered by PULSONIC | Based on BS EN 12504-4:2004 | 3D View: Three.js</div>
     </div>
 
@@ -86,34 +94,27 @@
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
         // --- Module scope variables ---
+        // (Variables remain the same)
         let form, calculateButton, resultDiv, resultIcon, resultText;
         let diagramSection, diagramCanvas;
         let labelL2Start, labelL2End, labelHValue;
         let scene, camera, renderer, controls;
-        let concreteBlock, crackPlane, transducerLeft, transducerRight;
+        let concreteBlock, crackMesh, transducerLeft, transducerRight; // Renamed crackPlane to crackMesh
         let threeJsInitialized = false;
-        const VISUAL_WIDTH_SCALE = 5; const VISUAL_DEPTH_SCALE = 3; const CRACK_PLANE_WIDTH = 0.1;
+        const VISUAL_WIDTH_SCALE = 5; const VISUAL_DEPTH_SCALE = 3;
+        const CRACK_BOX_WIDTH = 0.05; // Make crack visually thinner
+        const CRACK_BOX_DEPTH = 0.05;
+
 
         // --- Function Definitions ---
-
-        function showResult(message, isError = false) { /* Identical to previous */
-            if (!resultDiv || !resultIcon || !resultText) { console.error("Result elements missing in showResult"); return; }
-            console.log(`ShowResult: "${message}", Error: ${isError}`);
-            resultText.textContent = message;
-            if (!diagramSection) diagramSection = document.getElementById('diagramSection');
-            if (!labelL2Start) labelL2Start = document.getElementById('label-l2-start');
-            if (!labelL2End) labelL2End = document.getElementById('label-l2-end');
-            if (!labelHValue) labelHValue = document.getElementById('label-h-value');
-            if (isError) {
-                resultDiv.classList.add('error'); resultIcon.className = "fas fa-exclamation-triangle";
-                if (diagramSection) diagramSection.style.display = 'none';
-                if (labelL2Start) labelL2Start.style.display = 'none'; if (labelL2End) labelL2End.style.display = 'none'; if (labelHValue) labelHValue.style.display = 'none';
-            } else {
-                resultDiv.classList.remove('error'); resultIcon.className = "fas fa-check-circle";
-            }
+        function showResult(message, isError = false) { /* Identical */
+             if (!resultDiv || !resultIcon || !resultText) { console.error("Result elements missing in showResult"); return; }
+             console.log(`ShowResult: "${message}", Error: ${isError}`); resultText.textContent = message;
+             if (!diagramSection) diagramSection = document.getElementById('diagramSection'); if (!labelL2Start) labelL2Start = document.getElementById('label-l2-start'); if (!labelL2End) labelL2End = document.getElementById('label-l2-end'); if (!labelHValue) labelHValue = document.getElementById('label-h-value');
+             if (isError) { resultDiv.classList.add('error'); resultIcon.className = "fas fa-exclamation-triangle"; if (diagramSection) diagramSection.style.display = 'none'; if (labelL2Start) labelL2Start.style.display = 'none'; if (labelL2End) labelL2End.style.display = 'none'; if (labelHValue) labelHValue.style.display = 'none'; }
+             else { resultDiv.classList.remove('error'); resultIcon.className = "fas fa-check-circle"; }
         }
-
-        function calculateCrackDepth() { /* Identical logic, relies on showResult and updateDiagram3D */
+        function calculateCrackDepth() { /* Identical logic */
             console.log("CalculateCrackDepth started.");
             const t1Input=document.getElementById('t1'), l1Input=document.getElementById('l1'), t2Input=document.getElementById('t2'), l2Input=document.getElementById('l2');
             if (!t1Input || !l1Input || !t2Input || !l2Input) { showResult("Error: Input fields missing.", true); console.error("Input fields missing."); return; }
@@ -128,7 +129,7 @@
             showResult(`Crack Depth: ${h.toFixed(2)} mm`, false);
             if (threeJsInitialized && diagramSection) { console.log("Updating 3D diagram..."); diagramSection.style.display = 'block'; try { updateDiagram3D(l2, h); console.log("3D diagram updated."); } catch (error) { console.error("Error updating 3D:", error); showResult(`Crack Depth: ${h.toFixed(2)} mm. (3D update error)`, false); } } else { console.log("Skipping 3D update."); }
             console.log("CalculateCrackDepth finished.");
-        }
+         }
 
         // --- Three.js Functions ---
         function initThreeJS() {
@@ -136,191 +137,180 @@
             try {
                 diagramCanvas = document.getElementById('diagramCanvas');
                 if (!diagramCanvas) throw new Error("Canvas 'diagramCanvas' not found!");
-                // Ensure canvas has dimensions before setting renderer size
-                if (diagramCanvas.clientWidth <= 0 || diagramCanvas.clientHeight <= 0) {
-                    console.warn("DEBUG: Canvas has zero dimensions initially. Renderer size might be incorrect.");
-                }
+                if (diagramCanvas.clientWidth <= 0 || diagramCanvas.clientHeight <= 0) { console.warn("DEBUG: Canvas zero dimensions on init."); }
 
                 labelL2Start = document.getElementById('label-l2-start'); labelL2End = document.getElementById('label-l2-end'); labelHValue = document.getElementById('label-h-value');
-                scene = new THREE.Scene(); scene.background = new THREE.Color(0xf0f4f8);
-                const aspectRatio = diagramCanvas.clientWidth / diagramCanvas.clientHeight || 1; // Default aspect ratio if dimensions are 0
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(0xeceff1); // Set background color
+
+                const aspectRatio = diagramCanvas.clientWidth / diagramCanvas.clientHeight || 1;
                 camera = new THREE.PerspectiveCamera(50, aspectRatio, 0.1, 100);
-                camera.position.set(0, 3, 8); // Adjusted camera position slightly
+                camera.position.set(0, 4, 7); // Adjusted camera position
                 camera.lookAt(0, 0, 0);
 
                 renderer = new THREE.WebGLRenderer({ canvas: diagramCanvas, antialias: true, alpha: true });
-                renderer.setSize(diagramCanvas.clientWidth || 300, diagramCanvas.clientHeight || 200); // Use fallback size if needed
+                renderer.setSize(diagramCanvas.clientWidth || 300, diagramCanvas.clientHeight || 200);
                 renderer.setPixelRatio(window.devicePixelRatio);
 
-                const ambientLight = new THREE.AmbientLight(0xffffff, 0.8); scene.add(ambientLight); // Slightly brighter
-                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.9); // Slightly brighter
-                directionalLight.position.set(5, 10, 7.5); scene.add(directionalLight);
+                // --- IMPROVED Lighting ---
+                const hemiLight = new THREE.HemisphereLight( 0xffffff, 0xaaaaaa, 1.0 ); // Sky, Ground, Intensity
+                scene.add( hemiLight );
+                const dirLight = new THREE.DirectionalLight( 0xffffff, 0.8 );
+                dirLight.position.set( 8, 12, 5 ); // Adjust angle
+                scene.add( dirLight );
 
-                // Add Axes Helper for debugging orientation
-                const axesHelper = new THREE.AxesHelper(5); // Length of 5 units
-                scene.add(axesHelper);
-                console.log("DEBUG: AxesHelper added to scene.");
+                // REMOVED Axes Helper for cleaner look
+                // const axesHelper = new THREE.AxesHelper(5);
+                // scene.add(axesHelper);
 
                 controls = new OrbitControls(camera, renderer.domElement); controls.enableDamping = true; controls.dampingFactor = 0.1; controls.screenSpacePanning = false;
-                controls.target.set(0, 0, 0); // Explicitly set target AFTER creation
+                controls.target.set(0, 0, 0);
 
-                createInitialObjects(); // Create the meshes
-                controls.update(); // Update controls after setting target
-                renderer.render(scene, camera); // Force initial render attempt
+                createInitialObjects();
+                controls.update();
+                renderer.render(scene, camera); // Initial render
 
-                animate(); // Start the render loop
+                animate();
                 window.addEventListener('resize', onWindowResize, false);
                 threeJsInitialized = true; console.log("DEBUG: Three.js Initialized OK.");
-
-                 // Call resize handler once after init to potentially fix initial size
-                 onWindowResize();
+                onWindowResize(); // Call resize once to set initial size correctly
 
             } catch (error) { console.error("!!! DEBUG: Three.js Init Failed:", error); threeJsInitialized = false; showResult("Error initializing 3D view.", true); if(diagramSection) diagramSection.style.display = 'none'; }
         }
-        function createInitialObjects() { /* Identical */
-            const blockGeometry = new THREE.BoxGeometry(VISUAL_WIDTH_SCALE * 1.2, VISUAL_DEPTH_SCALE, VISUAL_DEPTH_SCALE * 0.8); const blockMaterial = new THREE.MeshStandardMaterial({ color: 0xd1d5db, roughness: 0.8, metalness: 0.1 }); // Added slight metalness
-            concreteBlock = new THREE.Mesh(blockGeometry, blockMaterial); concreteBlock.position.y = -VISUAL_DEPTH_SCALE / 2; scene.add(concreteBlock);
-            const transducerRadius = 0.15; const transducerHeight = 0.1; const transducerGeometry = new THREE.CylinderGeometry(transducerRadius, transducerRadius, transducerHeight, 16); const transducerMaterial = new THREE.MeshStandardMaterial({ color: 0x374151, roughness: 0.5, metalness: 0.2 });
-            transducerLeft = new THREE.Mesh(transducerGeometry, transducerMaterial); transducerLeft.position.set(-VISUAL_WIDTH_SCALE / 2, transducerHeight / 2, 0); scene.add(transducerLeft);
-            transducerRight = new THREE.Mesh(transducerGeometry, transducerMaterial); transducerRight.position.set(VISUAL_WIDTH_SCALE / 2, transducerHeight / 2, 0); scene.add(transducerRight);
-            const crackGeometry = new THREE.PlaneGeometry(CRACK_PLANE_WIDTH, 0.01); const crackMaterial = new THREE.MeshBasicMaterial({ color: 0xef4444, side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
-            crackPlane = new THREE.Mesh(crackGeometry, crackMaterial); crackPlane.position.set(0, -0.005, 0); scene.add(crackPlane); console.log("DEBUG: Initial 3D objects created.");
+
+        function createInitialObjects() {
+            // Concrete Block - Adjusted Material
+            const blockGeometry = new THREE.BoxGeometry(VISUAL_WIDTH_SCALE * 1.2, VISUAL_DEPTH_SCALE, VISUAL_DEPTH_SCALE * 0.8);
+            const blockMaterial = new THREE.MeshStandardMaterial({ color: 0xcfd8dc, roughness: 0.9, metalness: 0.05 });
+            concreteBlock = new THREE.Mesh(blockGeometry, blockMaterial);
+            concreteBlock.position.y = -VISUAL_DEPTH_SCALE / 2; // Top surface at y=0
+            scene.add(concreteBlock);
+
+            // Transducers - Adjusted Material
+            const transducerRadius = 0.15; const transducerHeight = 0.1;
+            const transducerGeometry = new THREE.CylinderGeometry(transducerRadius, transducerRadius, transducerHeight, 16);
+            const transducerMaterial = new THREE.MeshStandardMaterial({ color: 0x455a64, roughness: 0.4, metalness: 0.3 });
+            transducerLeft = new THREE.Mesh(transducerGeometry, transducerMaterial);
+            transducerLeft.position.set(-VISUAL_WIDTH_SCALE / 2, transducerHeight / 2, 0); scene.add(transducerLeft);
+            transducerRight = new THREE.Mesh(transducerGeometry, transducerMaterial);
+            transducerRight.position.set(VISUAL_WIDTH_SCALE / 2, transducerHeight / 2, 0); scene.add(transducerRight);
+
+            // --- Crack Mesh (Thin Box) ---
+            const crackGeometry = new THREE.BoxGeometry(CRACK_BOX_WIDTH, 0.01, CRACK_BOX_DEPTH); // Use BoxGeometry
+            const crackMaterial = new THREE.MeshBasicMaterial({
+                color: 0xb71c1c, // Darker red
+                transparent: true,
+                opacity: 0.85
+            });
+            crackMesh = new THREE.Mesh(crackGeometry, crackMaterial); // Use crackMesh variable
+            crackMesh.position.set(0, -0.005, 0); // Start just below surface
+            scene.add(crackMesh);
+            console.log("DEBUG: Initial 3D objects created (using Box for crack).");
         }
-        function updateDiagram3D(l2, h) { /* Identical */
-            if (!threeJsInitialized || !transducerLeft || !transducerRight || !crackPlane) return;
+
+        function updateDiagram3D(l2, h) {
+            if (!threeJsInitialized || !transducerLeft || !transducerRight || !crackMesh) return; // Use crackMesh
             const visualL2 = VISUAL_WIDTH_SCALE; transducerLeft.position.x = -visualL2 / 2; transducerRight.position.x = visualL2 / 2;
-            const maxExpectedH = l2 > 0 ? l2 : 1; const visualMaxH = VISUAL_DEPTH_SCALE * 0.9; const h_scaled = (h / maxExpectedH) * visualMaxH;
-            const finalVisualH = Math.min(Math.max(h_scaled, 0.01), visualMaxH);
-            crackPlane.scale.y = finalVisualH / 0.01; crackPlane.position.y = - (finalVisualH / 2);
-            console.log(`DEBUG: Updating crack plane scale. Visual H: ${finalVisualH}, Scale Y: ${crackPlane.scale.y}`); // Log scale
+
+            const maxExpectedH = l2 > 0 ? l2 : 1; const visualMaxH = VISUAL_DEPTH_SCALE * 0.95; // Allow slightly deeper visual crack
+            const h_scaled = (h / maxExpectedH) * visualMaxH;
+            const finalVisualH = Math.max(h_scaled, 0.01); // Clamp minimum
+
+            // --- Adjust scale and position for BoxGeometry ---
+            crackMesh.scale.y = finalVisualH / 0.01; // Scale based on initial height
+            crackMesh.position.y = - (finalVisualH / 2); // Position center of scaled box
+            console.log(`DEBUG: Updating crack mesh. Visual H: ${finalVisualH.toFixed(2)}, Scale Y: ${crackMesh.scale.y.toFixed(2)}, Pos Y: ${crackMesh.position.y.toFixed(2)}`);
+
             updateOverlayLabels(l2, h);
         }
+
         // --- REVISED updateOverlayLabels ---
         function updateOverlayLabels(l2, h) {
             console.log("DEBUG: updateOverlayLabels started.");
-             if (!renderer || !camera || !labelL2Start || !labelL2End || !labelHValue || !transducerLeft || !transducerRight || !crackPlane || !diagramSection) {
-                 console.warn("DEBUG: Missing elements for label update.");
-                 return;
-             }
-             const canvas = renderer.domElement;
-             const canvasBounds = diagramCanvas.getBoundingClientRect(); // Get canvas position on PAGE
-             const diagramSectionBounds = diagramSection.getBoundingClientRect(); // Get section position on PAGE
+            if (!renderer || !camera || !labelL2Start || !labelL2End || !labelHValue || !transducerLeft || !transducerRight || !crackMesh || !diagramSection) { console.warn("DEBUG: Missing elements for label update."); return; }
 
-             // Check if bounds are valid
-             if (!canvasBounds || canvasBounds.width === 0 || canvasBounds.height === 0 || !diagramSectionBounds) {
-                 console.error("DEBUG: Cannot get valid bounds for canvas or diagram section.");
-                 labelL2Start.style.display = 'none'; labelL2End.style.display = 'none'; labelHValue.style.display = 'none';
-                 return;
-             }
-             console.log(`DEBUG: Canvas bounds L=${canvasBounds.left.toFixed(0)} T=${canvasBounds.top.toFixed(0)} W=${canvasBounds.width.toFixed(0)} H=${canvasBounds.height.toFixed(0)}`);
-             console.log(`DEBUG: Section bounds L=${diagramSectionBounds.left.toFixed(0)} T=${diagramSectionBounds.top.toFixed(0)}`);
+            const canvas = renderer.domElement;
+            const diagramSectionBounds = diagramSection.getBoundingClientRect();
 
-             // Function to convert 3D world pos -> 2D screen pos relative to PAGE
-             const toPagePosition = (object) => {
-                 const vector = new THREE.Vector3();
-                 // Ensure matrices are updated (should be handled by render loop)
-                 object.updateMatrixWorld();
-                 vector.setFromMatrixPosition(object.matrixWorld);
-                 vector.project(camera); // Project to NDC (-1 to +1)
+            if (!diagramSectionBounds || diagramSectionBounds.width === 0) { console.error("DEBUG: Cannot get valid bounds for diagram section."); return; }
 
-                 // Convert NDC to screen coordinates relative to viewport
-                 const screenX = (vector.x * 0.5 + 0.5) * window.innerWidth;
-                 const screenY = (-vector.y * 0.5 + 0.5) * window.innerHeight;
+            // Function to convert 3D world -> 2D screen position relative to VIEWPORT
+            const worldToScreen = (object) => {
+                const vector = new THREE.Vector3();
+                object.updateMatrixWorld(); // Ensure matrix is up-to-date
+                vector.setFromMatrixPosition(object.matrixWorld);
+                vector.project(camera); // To NDC
+                // To CSS pixels from top-left of viewport
+                const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
+                const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
+                 console.log(`DEBUG: worldToScreen NDC: x=${vector.x.toFixed(2)}, y=${vector.y.toFixed(2)} -> Screen: x=${x.toFixed(0)}, y=${y.toFixed(0)}`);
+                return { x, y };
+            };
 
-                 console.log(`DEBUG: Object NDC: x=${vector.x.toFixed(2)}, y=${vector.y.toFixed(2)}, z=${vector.z.toFixed(2)} -> Screen: x=${screenX.toFixed(0)}, y=${screenY.toFixed(0)}`);
-                 return { x: screenX, y: screenY };
-             };
+            // Helper to set label style
+            const positionLabel = (label, targetX_page, targetY_page, offsetX = 0, offsetY = 0) => {
+                 // Calculate position relative to the diagramSection's top-left corner
+                 const relativeX = targetX_page - diagramSectionBounds.left;
+                 const relativeY = targetY_page - diagramSectionBounds.top;
+                 label.style.left = `${relativeX + offsetX}px`;
+                 label.style.top = `${relativeY + offsetY}px`;
+                 label.style.display = 'block';
+                 console.log(`DEBUG: Set ${label.id}: Left=${label.style.left} Top=${label.style.top}`);
+            };
 
-             try {
-                 // Get page positions
-                 const posL2StartPage = toPagePosition(transducerLeft);
-                 const posL2EndPage = toPagePosition(transducerRight);
-                 // Use crack plane's position for H label reference
-                 const posHPage = toPagePosition(crackPlane);
+            try {
+                // --- Calculate target points in screen space ---
+                const posL2StartPage = worldToScreen(transducerLeft);
+                const posL2EndPage = worldToScreen(transducerRight);
+                 // Use a point slightly above the crack's center for H label reference
+                 const crackCenterPoint = new THREE.Vector3();
+                 crackMesh.getWorldPosition(crackCenterPoint); // Center of the crack mesh
+                 const posHPage = worldToScreen({ getWorldPosition: (v) => v.copy(crackCenterPoint).setY(0) }); // Project point at surface above crack center
 
-                 // Calculate position relative to the diagramSection parent
-                 const labelTopOffset = -15; // How far above the target point
-                 const labelLeftOffsetH = 15; // How far right of the crack center
+                 // --- Position Labels ---
+                 const labelTopOffset = -15; // Offset above transducers
+                 const labelRightOffsetH = 10; // Offset right of crack center
 
-                 // Position Start Label
-                 labelL2Start.style.display = 'block';
-                 labelL2Start.textContent = `0 mm`; // Fixed text
-                 labelL2Start.style.left = `${posL2StartPage.x - diagramSectionBounds.left}px`; // Relative to section
-                 labelL2Start.style.top = `${posL2StartPage.y - diagramSectionBounds.top + labelTopOffset}px`; // Relative + Offset
-                 console.log(`DEBUG: Label Start Left=${labelL2Start.style.left} Top=${labelL2Start.style.top}`);
+                 positionLabel(labelL2Start, posL2StartPage.x, posL2StartPage.y, 0, labelTopOffset);
+                 labelL2Start.textContent = `0 mm`;
 
-                 // Position End Label
-                 labelL2End.style.display = 'block';
+                 positionLabel(labelL2End, posL2EndPage.x, posL2EndPage.y, 0, labelTopOffset);
                  labelL2End.textContent = `${l2.toFixed(0)} mm`;
-                 labelL2End.style.left = `${posL2EndPage.x - diagramSectionBounds.left}px`; // Relative to section
-                 labelL2End.style.top = `${posL2EndPage.y - diagramSectionBounds.top + labelTopOffset}px`; // Relative + Offset
-                 console.log(`DEBUG: Label End Left=${labelL2End.style.left} Top=${labelL2End.style.top}`);
 
-                 // Position H Label
-                 labelHValue.style.display = 'block';
+                 positionLabel(labelHValue, posHPage.x, posHPage.y, labelRightOffsetH, 15); // Offset right and slightly down
                  labelHValue.textContent = `h = ${h.toFixed(2)} mm`;
-                 // Position relative to crack center, adjusted vertically
-                 labelHValue.style.left = `${posHPage.x - diagramSectionBounds.left + labelLeftOffsetH}px`; // Relative + Offset
-                 labelHValue.style.top = `${posHPage.y - diagramSectionBounds.top + (crackPlane.scale.y * 0.01 * 0.5 * 10)}px`; // Attempt to position vertically mid-crack (needs tuning)
-                 console.log(`DEBUG: Label H Left=${labelHValue.style.left} Top=${labelHValue.style.top}`);
 
-             } catch (e) { console.error("DEBUG: Error calculating/setting label positions:", e); if (labelL2Start) labelL2Start.style.display = 'none'; if (labelL2End) labelL2End.style.display = 'none'; if (labelHValue) labelHValue.style.display = 'none'; }
-             console.log("DEBUG: updateOverlayLabels finished.");
+            } catch (e) { console.error("DEBUG: Error calculating/setting label positions:", e); if (labelL2Start) labelL2Start.style.display = 'none'; if (labelL2End) labelL2End.style.display = 'none'; if (labelHValue) labelHValue.style.display = 'none'; }
+            console.log("DEBUG: updateOverlayLabels finished.");
         }
-        function onWindowResize() { /* Identical */
-             if (!camera || !renderer || !diagramCanvas) return;
-             console.log("DEBUG: Window resized.");
-             const width = diagramCanvas.clientWidth;
-             const height = diagramCanvas.clientHeight;
-              if (width > 0 && height > 0) {
-                 camera.aspect = width / height;
-                 camera.updateProjectionMatrix();
-                 renderer.setSize(width, height);
-                 console.log(`DEBUG: Resized renderer to ${width}x${height}`);
-             } else {
-                 console.warn("DEBUG: Canvas dimensions zero during resize.");
-             }
+
+        function onWindowResize() { /* Identical logic */
+            if (!camera || !renderer || !diagramCanvas) return; console.log("DEBUG: Window resized.");
+            const width = diagramCanvas.clientWidth; const height = diagramCanvas.clientHeight;
+             if (width > 0 && height > 0) { camera.aspect = width / height; camera.updateProjectionMatrix(); renderer.setSize(width, height); console.log(`DEBUG: Resized renderer to ${width}x${height}`); }
+             else { console.warn("DEBUG: Canvas dimensions zero during resize."); }
         }
-        function animate() {
-             requestAnimationFrame(animate);
-             if(threeJsInitialized && controls && renderer && scene && camera) {
-                 try {
-                     controls.update();
-                     renderer.render(scene, camera); // Render the scene
-                 } catch (renderError) {
-                     console.error("!!! DEBUG: Error during render loop:", renderError);
-                     // Optionally stop the loop or show persistent error
-                 }
-             }
-         }
+        function animate() { /* Identical logic with try/catch */
+            requestAnimationFrame(animate);
+            if(threeJsInitialized && controls && renderer && scene && camera) {
+                 try { controls.update(); renderer.render(scene, camera); }
+                 catch (renderError) { console.error("!!! DEBUG: Error during render loop:", renderError); }
+            }
+        }
 
 
         // --- Main Execution Logic ---
+        // (Identical to previous version - finds elements, attaches button listener, calls initThreeJS)
         console.log("DEBUG: Main script: Starting setup...");
-        form = document.getElementById('crackForm');
-        calculateButton = document.getElementById('calculateButton');
-        resultDiv = document.getElementById('result');
-        diagramSection = document.getElementById('diagramSection');
-        resultIcon = resultDiv ? resultDiv.querySelector('i') : null;
-        resultText = resultDiv ? resultDiv.querySelector('span') : null;
-
-        if (!form || !calculateButton || !resultDiv || !resultIcon || !resultText) {
-            console.error("CRITICAL: Essential elements missing. Aborting.");
-            alert("Page Error: Essential elements missing.");
-        } else {
-            console.log("DEBUG: Essential elements found.");
-            if (diagramSection) diagramSection.style.display = 'none';
-
+        form = document.getElementById('crackForm'); calculateButton = document.getElementById('calculateButton'); resultDiv = document.getElementById('result'); diagramSection = document.getElementById('diagramSection');
+        resultIcon = resultDiv ? resultDiv.querySelector('i') : null; resultText = resultDiv ? resultDiv.querySelector('span') : null;
+        if (!form || !calculateButton || !resultDiv || !resultIcon || !resultText) { console.error("CRITICAL: Essential elements missing. Aborting."); alert("Page Error: Essential elements missing."); }
+        else { console.log("DEBUG: Essential elements found."); if (diagramSection) diagramSection.style.display = 'none';
             calculateButton.addEventListener('click', function(event) {
-                console.log("DEBUG: --- Calculate Button Click Handler START ---");
-                event.preventDefault(); console.log("DEBUG: Default action prevented.");
+                console.log("DEBUG: --- Calculate Button Click Handler START ---"); event.preventDefault(); console.log("DEBUG: Default action prevented.");
                 if (!form.checkValidity()) { console.log("DEBUG: Form invalid (HTML5)."); form.reportValidity(); showResult("Please fill all fields correctly.", true); console.log("DEBUG: --- Button Click Handler END (Invalid) ---"); return; }
-                console.log("DEBUG: Form valid. Calling calculateCrackDepth...");
-                try { calculateCrackDepth(); } catch (calcError) { console.error("!!! DEBUG: Error during calculateCrackDepth call:", calcError); showResult("Calculation error.", true); }
-                 console.log("DEBUG: --- Button Click Handler END ---");
-            });
-            console.log("DEBUG: Click listener attached.");
-
+                console.log("DEBUG: Form valid. Calling calculateCrackDepth..."); try { calculateCrackDepth(); } catch (calcError) { console.error("!!! DEBUG: Error during calculateCrackDepth call:", calcError); showResult("Calculation error.", true); } console.log("DEBUG: --- Button Click Handler END ---");
+            }); console.log("DEBUG: Click listener attached.");
             initThreeJS(); // Initialize Three.js
         }
         console.log("DEBUG: Main script: Setup finished.");
